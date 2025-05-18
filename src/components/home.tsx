@@ -1,21 +1,72 @@
-import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 import {
   CalendarIcon,
   ChevronRightIcon,
   TrendingUpIcon,
   AwardIcon,
   UserIcon,
+  CreditCardIcon,
+  CheckCircleIcon,
+  AlertCircleIcon,
+  ArrowRightIcon,
 } from "lucide-react";
 import StreakCounter from "./StreakCounter";
 import DailyCheckIn from "./DailyCheckIn";
 import StreakCalendar from "./StreakCalendar";
 import ProgressCharts from "./ProgressCharts";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
+);
 
 const Home = () => {
+  const [subscription, setSubscription] = useState({
+    status: "loading", // loading, active, free, expired
+    type: "", // free, monthly, lifetime
+    daysRemaining: 0,
+  });
+
+  // Mock function to check subscription status
+  // In a real app, this would fetch from your database
+  useEffect(() => {
+    const checkSubscription = async () => {
+      try {
+        // This would be a real API call in production
+        // For now, we'll simulate a subscription
+        const mockSubscription = {
+          status: "active",
+          type: "free", // free, monthly, lifetime
+          daysRemaining: 10,
+        };
+
+        setSubscription(mockSubscription);
+      } catch (error) {
+        console.error("Error checking subscription:", error);
+        setSubscription({
+          status: "free",
+          type: "free",
+          daysRemaining: 14,
+        });
+      }
+    };
+
+    checkSubscription();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -42,6 +93,26 @@ const Home = () => {
           </div>
         </div>
       </header>
+
+      {/* Subscription Banner */}
+      {subscription.status === "free" && (
+        <div className="bg-primary/10 py-2">
+          <div className="container px-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertCircleIcon className="h-4 w-4 text-primary" />
+              <p className="text-sm">
+                <span className="font-medium">Free trial:</span>{" "}
+                {subscription.daysRemaining} days remaining
+              </p>
+            </div>
+            <Link to="/supporting">
+              <Button size="sm" variant="outline" className="text-xs h-8">
+                Upgrade
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="container px-4 py-6">
@@ -125,6 +196,148 @@ const Home = () => {
                     </p>
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Supporting Section */}
+          <Card className="col-span-full">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCardIcon className="h-5 w-5" />
+                Supporting
+              </CardTitle>
+              <CardDescription>
+                Choose a plan that works for you
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                {/* Free Plan */}
+                <div
+                  className={`rounded-lg border p-4 ${subscription.type === "free" ? "border-primary bg-primary/5" : ""}`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-medium">Free Trial</h3>
+                    {subscription.type === "free" && (
+                      <Badge variant="outline" className="bg-primary/10">
+                        Current
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-2xl font-bold mb-1">$0</p>
+                  <p className="text-sm text-muted-foreground mb-4">14 days</p>
+                  <ul className="text-sm space-y-2 mb-4">
+                    <li className="flex items-center">
+                      <CheckCircleIcon className="mr-2 h-3 w-3 text-primary" />
+                      Basic features
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircleIcon className="mr-2 h-3 w-3 text-primary" />
+                      Daily check-ins
+                    </li>
+                  </ul>
+                  {subscription.type !== "free" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      disabled
+                    >
+                      Current Plan
+                    </Button>
+                  )}
+                </div>
+
+                {/* Monthly Plan */}
+                <div
+                  className={`rounded-lg border p-4 ${subscription.type === "monthly" ? "border-primary bg-primary/5" : ""}`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-medium">Monthly</h3>
+                    {subscription.type === "monthly" && (
+                      <Badge variant="outline" className="bg-primary/10">
+                        Current
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-2xl font-bold mb-1">$4</p>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    per month
+                  </p>
+                  <ul className="text-sm space-y-2 mb-4">
+                    <li className="flex items-center">
+                      <CheckCircleIcon className="mr-2 h-3 w-3 text-primary" />
+                      All features
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircleIcon className="mr-2 h-3 w-3 text-primary" />
+                      Advanced analytics
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircleIcon className="mr-2 h-3 w-3 text-primary" />
+                      Cancel anytime
+                    </li>
+                  </ul>
+                  {subscription.type !== "monthly" ? (
+                    <Button size="sm" className="w-full">
+                      Subscribe
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      disabled
+                    >
+                      Current Plan
+                    </Button>
+                  )}
+                </div>
+
+                {/* Lifetime Plan */}
+                <div
+                  className={`rounded-lg border p-4 ${subscription.type === "lifetime" ? "border-primary bg-primary/5" : ""}`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-medium">Lifetime</h3>
+                    {subscription.type === "lifetime" && (
+                      <Badge variant="outline" className="bg-primary/10">
+                        Current
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-2xl font-bold mb-1">$10</p>
+                  <p className="text-sm text-muted-foreground mb-4">one-time</p>
+                  <ul className="text-sm space-y-2 mb-4">
+                    <li className="flex items-center">
+                      <CheckCircleIcon className="mr-2 h-3 w-3 text-primary" />
+                      All features
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircleIcon className="mr-2 h-3 w-3 text-primary" />
+                      Lifetime updates
+                    </li>
+                    <li className="flex items-center">
+                      <CheckCircleIcon className="mr-2 h-3 w-3 text-primary" />
+                      Priority support
+                    </li>
+                  </ul>
+                  {subscription.type !== "lifetime" ? (
+                    <Button size="sm" className="w-full">
+                      Get Lifetime
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      disabled
+                    >
+                      Current Plan
+                    </Button>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -7,35 +7,76 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
-import { CalendarIcon, CheckCircle } from "lucide-react";
+import { CalendarIcon, CheckCircle, XCircle } from "lucide-react";
+import { createClient } from "@supabase/supabase-js";
 
 interface DailyCheckInProps {
   date?: Date;
-  onSubmit?: (data: { omad: boolean; keto: boolean; date: Date }) => void;
+  onSubmit?: (data: { success: boolean; date: Date }) => void;
   isSubmitted?: boolean;
+  userId?: string;
 }
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
+);
 
 const DailyCheckIn = ({
   date = new Date(),
   onSubmit = () => {},
   isSubmitted = false,
+  userId = "",
 }: DailyCheckInProps) => {
-  const [omad, setOmad] = useState(false);
-  const [keto, setKeto] = useState(false);
   const [submitted, setSubmitted] = useState(isSubmitted);
+  const [success, setSuccess] = useState<boolean | null>(null);
+  const [motivationalMessage, setMotivationalMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
-    onSubmit({ omad, keto, date });
-    setSubmitted(true);
+  const handleSubmit = async (didSucceed: boolean) => {
+    setLoading(true);
+    setSuccess(didSucceed);
+
+    try {
+      // Call the edge function to get a random motivational message
+      const { data, error } = await supabase.functions.invoke(
+        "supabase-functions-get_motivational_message",
+        {
+          body: { type: didSucceed ? "success" : "failure" },
+        },
+      );
+
+      if (error) throw error;
+
+      setMotivationalMessage(
+        data.message ||
+          (didSucceed
+            ? "Great job sticking to your plan today!"
+            : "Don't worry, tomorrow is a new day to get back on track!"),
+      );
+
+      // Call the onSubmit callback with the result
+      onSubmit({ success: didSucceed, date });
+      setSubmitted(true);
+    } catch (error) {
+      console.error("Error fetching motivational message:", error);
+      setMotivationalMessage(
+        didSucceed
+          ? "Great job sticking to your plan today!"
+          : "Don't worry, tomorrow is a new day to get back on track!",
+      );
+      onSubmit({ success: didSucceed, date });
+      setSubmitted(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetForm = () => {
-    setOmad(false);
-    setKeto(false);
+    setSuccess(null);
     setSubmitted(false);
+    setMotivationalMessage("");
   };
 
   return (
@@ -52,55 +93,47 @@ const DailyCheckIn = ({
       <CardContent>
         {submitted ? (
           <div className="flex flex-col items-center justify-center py-6">
-            <CheckCircle className="h-16 w-16 text-green-500 mb-2" />
-            <p className="text-lg font-medium">Check-in complete!</p>
-            <p className="text-sm text-muted-foreground text-center mt-1">
-              {omad && keto
-                ? "Great job following both OMAD and Keto today!"
-                : omad
-                  ? "You completed your OMAD goal today."
-                  : keto
-                    ? "You stayed on your Keto diet today."
-                    : "You recorded your progress for today."}
+            {success ? (
+              <CheckCircle className="h-16 w-16 text-green-500 mb-2" />
+            ) : (
+              <XCircle className="h-16 w-16 text-red-500 mb-2" />
+            )}
+            <p className="text-lg font-medium">
+              {success ? "Success!" : "That's okay!"}
+            </p>
+            <p className="text-sm text-muted-foreground text-center mt-1 px-4">
+              {motivationalMessage}
             </p>
             <Button variant="outline" className="mt-4" onClick={resetForm}>
-              Edit Check-in
+              Reset Check-in
             </Button>
           </div>
         ) : (
-          <div className="space-y-6 py-2">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="omad-toggle">OMAD</Label>
-                <p className="text-sm text-muted-foreground">One Meal A Day</p>
-              </div>
-              <Switch
-                id="omad-toggle"
-                checked={omad}
-                onCheckedChange={setOmad}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="keto-toggle">Keto</Label>
-                <p className="text-sm text-muted-foreground">Low-carb diet</p>
-              </div>
-              <Switch
-                id="keto-toggle"
-                checked={keto}
-                onCheckedChange={setKeto}
-              />
+          <div className="space-y-6 py-6">
+            <p className="text-center font-medium mb-4">
+              Did you stick to your diet and macros today?
+            </p>
+            <div className="flex justify-center gap-4">
+              <Button
+                className="bg-green-500 hover:bg-green-600 text-white px-8"
+                onClick={() => handleSubmit(true)}
+                disabled={loading}
+              >
+                <CheckCircle className="mr-2 h-5 w-5" />
+                Yes
+              </Button>
+              <Button
+                className="bg-red-500 hover:bg-red-600 text-white px-8"
+                onClick={() => handleSubmit(false)}
+                disabled={loading}
+              >
+                <XCircle className="mr-2 h-5 w-5" />
+                No
+              </Button>
             </div>
           </div>
         )}
       </CardContent>
-      {!submitted && (
-        <CardFooter>
-          <Button className="w-full" onClick={handleSubmit}>
-            Submit Check-in
-          </Button>
-        </CardFooter>
-      )}
     </Card>
   );
 };
