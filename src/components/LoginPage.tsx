@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { TrendingUpIcon, LogInIcon } from "lucide-react";
-
+import { handleLogin } from "../../supabase/functions/supabaseAuth";
 const LoginPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
@@ -27,14 +27,14 @@ const LoginPage = () => {
         </div>
 
         <Card className="w-full">
-          <CardHeader>
+           <CardHeader>
             <CardTitle className="text-xl">Login</CardTitle>
             <CardDescription>
-              Enter your email and password to access your account
+              To see your betterself, right now!
             </CardDescription>
-          </CardHeader>
+          </CardHeader> 
           <CardContent className="space-y-4">
-            <div className="space-y-2">
+{/*             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -57,9 +57,9 @@ const LoginPage = () => {
             <Button className="w-full" type="submit">
               <LogInIcon className="mr-2 h-4 w-4" />
               Login
-            </Button>
+            </Button>  */}
 
-            <div className="relative">
+            {/* <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <Separator className="w-full" />
               </div>
@@ -68,9 +68,29 @@ const LoginPage = () => {
                   Or continue with
                 </span>
               </div>
-            </div>
+            </div> */}
+              <Button className="w-full" type="submit" onClick={handleLogin}>
+              <svg
+  className="mr-2 h-4 w-4"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 48 48"
+  width="16"
+  height="16"
+>
+  <path
+    fill="white"
+    d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8
+    c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12
+    c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657
+    C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24
+    c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20
+    C44,22.659,43.862,21.35,43.611,20.083z"
+  />
+</svg>
 
-            <Button variant="outline" className="w-full">
+              Login with Google
+            </Button>
+            {/* <Button variant="outline" className="w-full">
               <svg
                 className="mr-2 h-4 w-4"
                 xmlns="http://www.w3.org/2000/svg"
@@ -96,7 +116,7 @@ const LoginPage = () => {
                 />
               </svg>
               Login with Google
-            </Button>
+            </Button> */}
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-center text-sm">

@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   CalendarIcon,
   ChevronRightIcon,
@@ -26,46 +26,30 @@ import StreakCounter from "./StreakCounter";
 import DailyCheckIn from "./DailyCheckIn";
 import StreakCalendar from "./StreakCalendar";
 import ProgressCharts from "./ProgressCharts";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-);
-
-const Home = () => {
+import { useUser } from "@/types/hook/useUserData1";
+const Home= () => {
+  const navigate = useNavigate();
+  const {user, loading, profile, checkIns, submitTodayCheckIn} = useUser(); 
   const [subscription, setSubscription] = useState({
     status: "loading", // loading, active, free, expired
     type: "", // free, monthly, lifetime
     daysRemaining: 0,
   });
+  const [showModal, setShowModal] = useState(false)
+  
+//take user data
+  useEffect(()=>{
+    if(!loading && !user && !profile &&!checkIns){
+      navigate("/login")
+    }
+  },[user,loading, profile, checkIns])
+  if (loading) return <p>Loading Data.......</p>;
+  if(profile && checkIns){
+  }
+  
 
   // Mock function to check subscription status
   // In a real app, this would fetch from your database
-  useEffect(() => {
-    const checkSubscription = async () => {
-      try {
-        // This would be a real API call in production
-        // For now, we'll simulate a subscription
-        const mockSubscription = {
-          status: "active",
-          type: "free", // free, monthly, lifetime
-          daysRemaining: 10,
-        };
-
-        setSubscription(mockSubscription);
-      } catch (error) {
-        console.error("Error checking subscription:", error);
-        setSubscription({
-          status: "free",
-          type: "free",
-          daysRemaining: 14,
-        });
-      }
-    };
-
-    checkSubscription();
-  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -78,18 +62,25 @@ const Home = () => {
             </div>
             <h1 className="text-xl font-bold">OMAD/Keto Streak Tracker</h1>
           </div>
+          <div className="flex items-center gap-2">          
+              <div className="text-sm text-muted-foreground">
+               Hello, {profile?.full_name}
+              </div>
+          </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/profile")}>
               <UserIcon className="mr-2 h-4 w-4" />
               Profile
             </Button>
-            <Avatar>
-              <AvatarImage
-                src="https://api.dicebear.com/7.x/avataaars/svg?seed=user123"
-                alt="User"
-              />
-              <AvatarFallback>U</AvatarFallback>
-            </Avatar>
+            {profile && (
+                <Avatar>
+                  <AvatarImage 
+                    src={profile.avatar_url} 
+                    alt="User" 
+                  />
+                  <AvatarFallback>{profile?.full_name?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
+                </Avatar>
+              )}
           </div>
         </div>
       </header>
@@ -139,7 +130,7 @@ const Home = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <DailyCheckIn />
+              <DailyCheckIn checkIns={checkIns} Loading ={loading} onSubmit={submitTodayCheckIn} />
             </CardContent>
           </Card>
 
@@ -152,13 +143,13 @@ const Home = () => {
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     Calendar View
                   </TabsTrigger>
-                  <TabsTrigger value="progress">
+                  <TabsTrigger value="progress">  
                     <TrendingUpIcon className="mr-2 h-4 w-4" />
                     Progress Charts
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="calendar" className="mt-4">
-                  <StreakCalendar />
+                  <StreakCalendar checkIns={checkIns}  />
                 </TabsContent>
                 <TabsContent value="progress" className="mt-4">
                   <ProgressCharts />

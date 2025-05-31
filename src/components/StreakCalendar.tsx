@@ -1,47 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { DayPicker } from 'react-day-picker';
+import 'react-day-picker/dist/style.css';
 import {
   format,
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
   isSameDay,
+  parseISO
 } from "date-fns";
 
 interface StreakDay {
-  date: Date;
-  omad: boolean;
-  keto: boolean;
+  checkIns: { date_checkin: string, isSuccess: boolean }[]; 
+  // omad: boolean;
+  // keto: boolean;
 }
 
 interface StreakCalendarProps {
-  streakData?: StreakDay[];
+  // streakData?: StreakDay[];
+  checkIns: { date_checkin: string, isSuccess: boolean }[]; 
   currentMonth?: Date;
   onMonthChange?: (date: Date) => void;
+  
 }
 
 const StreakCalendar = ({
-  streakData = [],
+  // streakData = [],
+  checkIns,
   currentMonth = new Date(),
   onMonthChange = () => {},
 }: StreakCalendarProps) => {
+  useEffect(()=>{
+    if(checkIns){
+      console.log("this is checkIns from StreakCalendar: ",checkIns)
+    }
+  })
   const [month, setMonth] = useState<Date>(currentMonth);
-
-  // Generate mock data if none provided
-  const mockStreakData: StreakDay[] =
-    streakData.length > 0
-      ? streakData
-      : [
-          { date: new Date(2023, 5, 1), omad: true, keto: true },
-          { date: new Date(2023, 5, 2), omad: true, keto: true },
-          { date: new Date(2023, 5, 3), omad: true, keto: false },
-          { date: new Date(2023, 5, 4), omad: false, keto: true },
-          { date: new Date(2023, 5, 5), omad: false, keto: false },
-          { date: new Date(2023, 5, 6), omad: true, keto: true },
-          { date: new Date(2023, 5, 7), omad: true, keto: true },
-        ];
 
   const handleMonthChange = (date: Date) => {
     setMonth(date);
@@ -50,36 +47,52 @@ const StreakCalendar = ({
 
   // Function to determine day class based on streak data
   const getDayClass = (day: Date) => {
-    const streakDay = mockStreakData.find((d) => isSameDay(d.date, day));
-
+    const streakDay = checkIns.find((d) => isSameDay(parseISO(d.date_checkin), day));
+    console.log("this is streakDay: ", streakDay)
     if (!streakDay) return "";
-
-    if (streakDay.omad && streakDay.keto) {
+    if (streakDay) {
       return "bg-green-500 text-white rounded-full";
-    } else if (streakDay.omad || streakDay.keto) {
-      return "bg-yellow-400 text-black rounded-full";
-    } else {
+    } 
+    else {
       return "bg-red-500 text-white rounded-full";
     }
   };
+  const modifiers = checkIns.reduce((acc, data) => {
+    const date = parseISO(data.date_checkin); // JS Date object 
+    const key = data.isSuccess ? 'success' : 'failure';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(date);
+    console.log("this is accKey: ", acc['failure'])
+    return acc;
+  }, {} as Record<'success' | 'failure', Date[]>);
+  
 
   return (
     <Card className="w-full max-w-4xl bg-white shadow-lg">
       <CardHeader>
         <CardTitle className="text-xl font-bold">Streak Calendar</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="">
         <div className="flex flex-col space-y-4">
           <Calendar
             mode="single"
+            numberOfMonths={3}
             month={month}
-            onMonthChange={handleMonthChange}
+            onMonthChange={handleMonthChange} 
             className="rounded-md border"
             classNames={{
+              months: "flex gap-8 justify-center", // <- controls layout of months
+              month: "bg-white rounded-lg shadow-sm p-3",
               day_selected: "bg-transparent",
-              day: (date) => getDayClass(date),
+              day: "h-8 w-8 p-0 font-normal aria-selected:opacity-100",
+              day_today: getDayClass(new Date())
             }}
-            selected={new Date()}
+            modifiers={modifiers}
+            modifiersClassNames={{
+               success: 'bg-green-500 text-white rounded-full',
+               failure: 'bg-red-500 text-white rounded-full'
+            }}
+            // selected={new Date()}
           />
 
           <div className="flex flex-wrap gap-4 justify-center mt-4">
@@ -104,31 +117,6 @@ const StreakCalendar = ({
           <div className="mt-4">
             <h3 className="text-md font-medium mb-2">Current Month Stats</h3>
             <div className="flex flex-wrap gap-3">
-              <Badge
-                variant="outline"
-                className="bg-green-100 text-green-800 border-green-300"
-              >
-                Perfect Days:{" "}
-                {mockStreakData.filter((d) => d.omad && d.keto).length}
-              </Badge>
-              <Badge
-                variant="outline"
-                className="bg-yellow-100 text-yellow-800 border-yellow-300"
-              >
-                Partial Days:{" "}
-                {
-                  mockStreakData.filter(
-                    (d) => (d.omad || d.keto) && !(d.omad && d.keto),
-                  ).length
-                }
-              </Badge>
-              <Badge
-                variant="outline"
-                className="bg-red-100 text-red-800 border-red-300"
-              >
-                Missed Days:{" "}
-                {mockStreakData.filter((d) => !d.omad && !d.keto).length}
-              </Badge>
             </div>
           </div>
         </div>

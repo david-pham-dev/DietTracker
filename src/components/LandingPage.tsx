@@ -42,7 +42,7 @@ const LandingPage = () => {
               Keto diets.
             </p>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              <Link to="/register">
+              <Link to="/login">
                 <Button size="lg" className="gap-1">
                   Start Your Streak
                   <ArrowRightIcon className="h-4 w-4" />

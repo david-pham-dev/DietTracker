@@ -19,7 +19,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "supabase/supabase.ts"],
   "exclude": ["src/tempobook"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
