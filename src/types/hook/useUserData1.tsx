@@ -1,6 +1,5 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
 import { supabase } from "../../../supabase/supabase";
-import { set } from "date-fns";
 
 type UserContextType = {
     user: any;
@@ -9,6 +8,8 @@ type UserContextType = {
     checkIns: any;
     updateProfile: (newData: any) => Promise<void>; 
     submitTodayCheckIn : ({success, date}) => Promise<any>;
+
+    getMotivationalMessage: ({success})=> Promise<{message: string} | null>;
 };
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -91,8 +92,22 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
             console.log("Check In Submitted");
         }
     }
+    const submitTodayMotivationalQuote = async()=>{
+        
+    }
+    const getMotivationalMessage = async ({success})=>{
+        const {data, error} = await supabase.rpc('get_random_message',{
+            is_success: success,
+            user_id: user.id     
+        })
+        if (error) {
+            console.error("Failed to fetch motivational message:", error);
+            return null;
+        }
+        return { message: data?.message};
+    }
     return(
-        <UserContext.Provider value={{user, profile,updateProfile,checkIns,submitTodayCheckIn,loading}}>
+        <UserContext.Provider value={{user, profile,updateProfile,checkIns,submitTodayCheckIn,loading, getMotivationalMessage}}>
             {children}
         </UserContext.Provider>
     );

@@ -10,14 +10,17 @@ import { Button } from "@/components/ui/button";
 import { format, set } from "date-fns";
 import { CalendarIcon, CheckCircle, XCircle } from "lucide-react";
 import { Loading } from "@/stories/button.stories";
+import { supabase } from "../../supabase/supabase";
 
 type DailyCheckInProps = {
   checkIns: { date_checkin: string, isSuccess: boolean }[]; 
   Loading: boolean;
+  user: any;
   onSubmit? : (result :{success: boolean; date:string })=> void;
+  // getMotivationalMessage?: (result :{success: boolean})=> Promise<{ message: string }>;
 };
 
-const DailyCheckIn:React.FC<DailyCheckInProps> = ({checkIns, Loading, onSubmit}) => {
+const DailyCheckIn:React.FC<DailyCheckInProps> = ({checkIns, Loading, onSubmit, user}) => {
   const [motivationalMessage, setMotivationalMessage] = useState("");
   const [success, setSuccess] = useState(Boolean);
   const [submitted,setSubmitted] = useState(false);
@@ -41,11 +44,28 @@ const DailyCheckIn:React.FC<DailyCheckInProps> = ({checkIns, Loading, onSubmit})
       console.log("succes check:", didSucceed)
       try{
         onSubmit({ success: didSucceed, date: today })
+        // getMotivationalMessage({success: didSucceed})
+        // console.log('set Motivational message: ', getMotivationalMessage({success: didSucceed}))
+        // setMotivationalMessage(message[0].message)
+        // console.log('set Motivational message: ', motivationalMessage)
+        const {data, error} = await supabase.rpc('get_random_message',{
+          is_success: didSucceed,
+          user_id: user.id     
+      })
+      if(!error){
+        console.log('data while fetching motive quotes: ',data)
+        console.log('set Motivational message: ', data[0].message)
+        setMotivationalMessage(data[0].message)
+      }
+      else{
+        console.log("error while fetching motive: ",error)
+      }
+       
         console.log("this is the passed data: ",{ success: didSucceed, date: today })
         setSubmitted(true)
       }
       catch(e){
-        console.log("Error while submitting    data: ",e)
+        console.log("Error while submitting data: ",e)
       }
       finally{
         setLoading(false);

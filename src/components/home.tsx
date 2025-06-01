@@ -29,7 +29,7 @@ import ProgressCharts from "./ProgressCharts";
 import { useUser } from "@/types/hook/useUserData1";
 const Home= () => {
   const navigate = useNavigate();
-  const {user, loading, profile, checkIns, submitTodayCheckIn} = useUser(); 
+  const {user, loading, profile, checkIns, submitTodayCheckIn, getMotivationalMessage} = useUser(); 
   const [subscription, setSubscription] = useState({
     status: "loading", // loading, active, free, expired
     type: "", // free, monthly, lifetime
@@ -44,9 +44,6 @@ const Home= () => {
     }
   },[user,loading, profile, checkIns])
   if (loading) return <p>Loading Data.......</p>;
-  if(profile && checkIns){
-  }
-  
 
   // Mock function to check subscription status
   // In a real app, this would fetch from your database
@@ -130,7 +127,7 @@ const Home= () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <DailyCheckIn checkIns={checkIns} Loading ={loading} onSubmit={submitTodayCheckIn} />
+              <DailyCheckIn checkIns={checkIns} Loading ={loading} onSubmit={submitTodayCheckIn} user={user} />
             </CardContent>
           </Card>
 
