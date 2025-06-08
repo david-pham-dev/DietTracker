@@ -27,24 +27,39 @@ import DailyCheckIn from "./DailyCheckIn";
 import StreakCalendar from "./StreakCalendar";
 import ProgressCharts from "./ProgressCharts";
 import { useUser } from "@/types/hook/useUserData1";
+import { useStreak } from "@/types/hook/useDataStreak";
 const Home= () => {
   const navigate = useNavigate();
-  const {user, loading, profile, checkIns, submitTodayCheckIn, getMotivationalMessage} = useUser(); 
+  const {currentStreak, longestStreak} = useStreak();
+  const {user, loading, profile, checkIns, submitTodayCheckIn, lastCheckIn, isSubmitting, motivationalMessage, existingMotivationalMessage} = useUser(); 
   const [subscription, setSubscription] = useState({
     status: "loading", // loading, active, free, expired
     type: "", // free, monthly, lifetime
     daysRemaining: 0,
   });
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal] = useState(false);
+  const [showProgressOverlay, setShowProgressOverlay] = useState(true);
+  const [showAchievementsOverlay, setShowAchievementsOverlay] = useState(true);
   
 //take user data
   useEffect(()=>{
     if(!loading && !user && !profile &&!checkIns){
       navigate("/login")
     }
-  },[user,loading, profile, checkIns])
+  },[user,loading, profile, checkIns, lastCheckIn])
   if (loading) return <p>Loading Data.......</p>;
-
+  // if(lastCheckIn) {
+  //   console.log('this is lastCheckIn in home.tsx: ', lastCheckIn)
+  // }
+  // else{
+  //   console.log('there is no lastCheckIn in home.tsx');
+  // }
+if(motivationalMessage){
+  console.log('this is motivational message in Home.tsx: ', motivationalMessage)
+}
+if(existingMotivationalMessage){
+  console.log('this is existing message in Home.tsx: ', existingMotivationalMessage)
+}
   // Mock function to check subscription status
   // In a real app, this would fetch from your database
 
@@ -114,7 +129,7 @@ const Home= () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <StreakCounter currentStreak={7} longestStreak={14} />
+              <StreakCounter lastCheckIn={lastCheckIn} currentStreak={currentStreak} longestStreak={longestStreak} />
             </CardContent>
           </Card>
 
@@ -127,7 +142,7 @@ const Home= () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <DailyCheckIn checkIns={checkIns} Loading ={loading} onSubmit={submitTodayCheckIn} user={user} />
+              <DailyCheckIn existingMotivationalMessage = {existingMotivationalMessage} checkIns={checkIns} Loading ={loading} isSubmitting ={isSubmitting} motivationalMessage={motivationalMessage} onSubmit={submitTodayCheckIn} user={user} />
             </CardContent>
           </Card>
 
@@ -149,14 +164,30 @@ const Home= () => {
                   <StreakCalendar checkIns={checkIns}  />
                 </TabsContent>
                 <TabsContent value="progress" className="mt-4">
-                  <ProgressCharts />
+                  <div className="relative">
+                    <ProgressCharts />
+                    {showProgressOverlay && (
+                      <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-lg">
+                        <div className="text-center p-6">
+                          <div className="text-2xl font-bold text-gray-800 mb-2">Coming Soon</div>
+                          <div className="text-gray-600 mb-4">Progress charts feature is under development</div>
+                          <Button 
+                            onClick={() => setShowProgressOverlay(false)}
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            Review Progress
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </TabsContent>
               </Tabs>
             </CardHeader>
           </Card>
 
           {/* Achievements Section */}
-          <Card className="col-span-full">
+          <Card className="col-span-full relative">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AwardIcon className="h-5 w-5" />
@@ -185,8 +216,27 @@ const Home= () => {
                   </div>
                 ))}
               </div>
+              {showAchievementsOverlay && (
+                <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-lg">
+                  <div className="text-center p-6">
+                    <div className="text-2xl font-bold text-gray-800 mb-2">
+                      Coming Soon
+                    </div>
+                    <div className="text-gray-600 mb-4">
+                      Achievement badges feature is under development
+                    </div>
+                    <Button 
+                      onClick={() => setShowAchievementsOverlay(false)}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      Review Achievements
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
+
 
           {/* Supporting Section */}
           <Card className="col-span-full">

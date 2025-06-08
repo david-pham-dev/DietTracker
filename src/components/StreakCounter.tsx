@@ -3,27 +3,52 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Flame, Trophy, Calendar } from "lucide-react";
-
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime);
 interface StreakCounterProps {
-  currentStreak?: number;
+  currentStreak?: number | null;
   longestStreak?: number;
   streakGoal?: number;
-  lastCheckIn?: string;
+  lastCheckIn: string |null;
 }
 
-const StreakCounter = ({
-  currentStreak = 0,
-  longestStreak = 0,
+const StreakCounter: React.FC<StreakCounterProps> = ({
+  currentStreak,
+  longestStreak,
   streakGoal = 30,
-  lastCheckIn = "Today",
-}: StreakCounterProps) => {
+  lastCheckIn
+}) => {
   // Calculate progress percentage towards goal
   const progressPercentage = Math.min(
     Math.round((currentStreak / streakGoal) * 100),
     100,
   );
+  if(lastCheckIn){
+    console.log("this is lastCheckIn in streakCounter: ", lastCheckIn)
+  }
+  else{
+    console.log('there is no lastCheckin')
+  }
+  const renderLastCheckIn = ()=>{
+    if(!lastCheckIn){
+      return 'No Check In Found'
+    }
+    const now = dayjs();
+    const checkInDate = dayjs(lastCheckIn);
+    const diffDays = now.diff(checkInDate, 'day');
+    if ( diffDays <= 7) {
+      return checkInDate.fromNow(); // "3 days ago"
+    }
+    else if(diffDays === 0){
+      return "Today";
+    } 
+    else {
+      return checkInDate.format('DD-MM-YYYY'); // "18-05-2025"
+    }
+  }
 
-  // Determine motivational message based on streak
+  // Determine motivational message based on streak 
   const getMotivationalMessage = () => {
     if (currentStreak === 0) return "Start your streak today!";
     if (currentStreak < 3) return "Great start! Keep going!";
@@ -40,7 +65,7 @@ const StreakCounter = ({
           <CardTitle className="text-2xl font-bold">Your Streak</CardTitle>
           <Badge variant="outline" className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
-            Last check-in: {lastCheckIn}
+            Last check-in: {renderLastCheckIn()}
           </Badge>
         </div>
       </CardHeader>

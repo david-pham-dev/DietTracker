@@ -7,6 +7,7 @@ import Profile from "./components/Profile";
 import routes from "tempo-routes";
 import { supabase } from "../supabase/supabase";
 import { UserProvider } from "./types/hook/useUserData1";
+import { StreakDataProvider } from "./types/hook/useDataStreak";
 
 function App() {
 
@@ -15,11 +16,13 @@ function App() {
     <Suspense fallback={<p>Loading...</p>}>
       <>
       <UserProvider>
+      <StreakDataProvider>
       <Routes>
           <Route path="/home" element={<Home/>} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
         {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
+      </StreakDataProvider>
       </UserProvider>       
       <Routes>
         <Route path="/" element={<LandingPage />} />

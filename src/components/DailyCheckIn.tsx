@@ -9,111 +9,68 @@ import {
 import { Button } from "@/components/ui/button";
 import { format, set } from "date-fns";
 import { CalendarIcon, CheckCircle, XCircle } from "lucide-react";
-import { Loading } from "@/stories/button.stories";
 import { supabase } from "../../supabase/supabase";
 
 type DailyCheckInProps = {
-  checkIns: { date_checkin: string, isSuccess: boolean }[]; 
+  checkIns: { date_checkin: string, isSuccess: boolean, message_id: Number }[]; 
   Loading: boolean;
   user: any;
-  onSubmit? : (result :{success: boolean; date:string })=> void;
-  // getMotivationalMessage?: (result :{success: boolean})=> Promise<{ message: string }>;
+  onSubmit? : (result :{success: boolean; date:string })=> Promise<void>;
+  motivationalMessage?: string | null;
+  isSubmitting?: boolean | null;
+  existingMotivationalMessage?: string | null;
 };
 
-const DailyCheckIn:React.FC<DailyCheckInProps> = ({checkIns, Loading, onSubmit, user}) => {
-  const [motivationalMessage, setMotivationalMessage] = useState("");
+const DailyCheckIn:React.FC<DailyCheckInProps> = ({checkIns, Loading, onSubmit, user, isSubmitting, motivationalMessage, existingMotivationalMessage}) => {
+  const [motivationalQuote, setMotivationalQuote] = useState("");
   const [success, setSuccess] = useState(Boolean);
   const [submitted,setSubmitted] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
   const today = new Date().toISOString().split('T')[0];
   const checkSubmitted = async()=>{
-    const isSubmitted = checkIns?.some((entry: any) => entry.date_checkin === today);  
-    if(isSubmitted){
-      setSuccess(checkIns?.some((entry: any) => entry.isSuccess))
+    // const isSubmitted = checkIns?.some((entry: any) => entry.date_checkin === today);  
+    const todayEntry = checkIns?.find(entry => entry.date_checkin === today);
+    console.log('checkin:', checkIns)
+
+    if(todayEntry){
+      setSubmitted(true);
+      setSuccess(todayEntry.isSuccess)
+      setMotivationalQuote(existingMotivationalMessage);
     }
-    setSubmitted(isSubmitted);
+    else{setSubmitted(false)}
   }
   useEffect(()=>{
     if(checkIns){
       checkSubmitted();
+
     }
   }, [checkIns])
+  useEffect(() => {
+    if (motivationalMessage) {
+      setMotivationalQuote(motivationalMessage);
+    }
+  }, [motivationalMessage]);
   const handleSubmission = async (didSucceed: boolean) =>{
-      setLoading(true);
+      await onSubmit({ success: didSucceed, date: today })
+      {isSubmitting?(
+        <div className="spinner">Submitting...</div>
+      ):
+      setMotivationalQuote(motivationalMessage)
       setSuccess(didSucceed);
-      console.log("succes check:", didSucceed)
+      console.log("succes check:", didSucceed) 
       try{
-        onSubmit({ success: didSucceed, date: today })
-        // getMotivationalMessage({success: didSucceed})
-        // console.log('set Motivational message: ', getMotivationalMessage({success: didSucceed}))
-        // setMotivationalMessage(message[0].message)
-        // console.log('set Motivational message: ', motivationalMessage)
-        const {data, error} = await supabase.rpc('get_random_message',{
-          is_success: didSucceed,
-          user_id: user.id     
-      })
-      if(!error){
-        console.log('data while fetching motive quotes: ',data)
-        console.log('set Motivational message: ', data[0].message)
-        setMotivationalMessage(data[0].message)
-      }
-      else{
-        console.log("error while fetching motive: ",error)
-      }
-       
         console.log("this is the passed data: ",{ success: didSucceed, date: today })
         setSubmitted(true)
       }
       catch(e){
         console.log("Error while submitting data: ",e)
       }
-      finally{
-        setLoading(false);
-      }
+    }
   }
-  // const handleSubmit = async (didSucceed: boolean) => {
-  //   setLoading(true);
-  //   setSuccess(didSucceed);
-
-  //   try {
-  //     // Call the edge function to get a random motivational message
-  //     const { data, error } = await supabase.functions.invoke(
-  //       "supabase-functions-get_motivational_message",
-  //       {
-  //         body: { type: didSucceed ? "success" : "failure" },
-  //       },
-  //     );
-
-  //     if (error) throw error;
-
-  //     setMotivationalMessage(
-  //       data.message ||
-  //         (didSucceed
-  //           ? "Great job sticking to your plan today!"
-  //           : "Don't worry, tomorrow is a new day to get back on track!"),
-  //     );
-
-  //     // Call the onSubmit callback with the result
-  //     onSubmit({ success: didSucceed, date });
-  //     setSubmitted(true);
-  //   } catch (error) {
-  //     console.error("Error fetching motivational message:", error);
-  //     setMotivationalMessage(
-  //       didSucceed
-  //         ? "Great job sticking to your plan today!"
-  //         : "Don't worry, tomorrow is a new day to get back on track!",
-  //     );
-  //     onSubmit({ success: didSucceed, date });
-  //     setSubmitted(true);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const resetForm = () => {
     setSuccess(null);
     setSubmitted(false);
-    setMotivationalMessage("");
+    setMotivationalQuote("");
   };
 
   return (
@@ -139,7 +96,7 @@ const DailyCheckIn:React.FC<DailyCheckInProps> = ({checkIns, Loading, onSubmit, 
               {success ? "Success!" : "That's okay!"}
             </p>
             <p className="text-sm text-muted-foreground text-center mt-1 px-4">
-              {motivationalMessage}
+              {motivationalQuote}
             </p>
             <Button variant="outline" className="mt-4" onClick={resetForm}>
               Reset Check-in
