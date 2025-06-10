@@ -5,6 +5,7 @@ import { isToday } from "date-fns";
 
 type UserContextType = {
     user: any;
+    session:any;
     profile: any;   
     loading: boolean;
     isSubmitting: boolean;
@@ -20,6 +21,7 @@ type UserContextType = {
 const UserContext = createContext<UserContextType | null>(null);
 
 export const UserProvider = ({children}:{children:React.ReactNode})=>{
+    const [session, setSession] = useState<any>(null);
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [profile, setProfile] = useState<any>(null);
@@ -29,14 +31,21 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
     const [motivationalMessage, setMotivationalMessage] = useState<string | null>(null);
     const [existingMotivationalMessage, setExistingMotivationalMessage] = useState<string | null>(null);
     const today = new Date().toISOString().split('T')[0];
+
+
+    //Authentication
+
     const fetchUserandProfile = async ()=>{
         setLoading(true);
         const {
-            data: {user}
-        } = await supabase.auth.getUser();
-        if(user){
-            setUser(user)
-            // await getLastCheckIn(user.id)
+            data: {session}
+        } = await supabase.auth.getSession();
+        if(session){
+            setSession(session);
+        }
+        if(session?.user){
+            const user = session?.user;
+            setUser(session?.user)
             const {data: profileData, error: profileError} = await supabase.from('profiles').select('*').eq('id', user.id).single();
             await fetchCheckIns(user);
             if(!profileError){
@@ -53,6 +62,28 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
             setCheckIns(null)
         }
         setLoading(false);
+
+        // if(user){
+        //     setUser(user)
+        //     // await getLastCheckIn(user.id)
+        //     const {data: profileData, error: profileError} = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        //     await fetchCheckIns(user);
+        //     if(!profileError){
+        //         setProfile(profileData);
+        //     }   
+        //     else{
+        //         console.log("Profile Fetching Error:", profileError)
+        //         setProfile(null)       
+        //     }
+        // }
+        // else{
+        //     setUser(null);
+        //     setProfile(null);
+        //     setCheckIns(null)
+        // }
+        // setLoading(false);
+
+ 
     };
     const fetchCheckIns = async (user:any)=>{
         if (!user) return;
@@ -175,7 +206,7 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
           };
         };
     return(
-        <UserContext.Provider value={{user, profile,updateProfile,checkIns, submitTodayCheckIn ,loading, lastCheckIn,isSubmitting,setMotivationalMessage ,motivationalMessage, existingMotivationalMessage}}>
+        <UserContext.Provider value={{user,session, profile,updateProfile,checkIns, submitTodayCheckIn ,loading, lastCheckIn,isSubmitting,setMotivationalMessage ,motivationalMessage, existingMotivationalMessage}}>
             {children}
         </UserContext.Provider>
     );

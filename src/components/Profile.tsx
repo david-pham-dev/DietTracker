@@ -311,9 +311,11 @@ const Profile = () => {
           </CardContent>
 
           <CardFooter className="flex flex-col sm:flex-row justify-between gap-4 border-t pt-6">
+          <Link to="/home" className="mr-4">
             <Button variant="outline" type="button">
               Cancel
             </Button>
+            </Link>
             <Button type="submit" onClick={handleSubmitData}>
               <SaveIcon className="mr-2 h-4 w-4" />
               Save Changes
