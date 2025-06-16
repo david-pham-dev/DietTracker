@@ -1,50 +1,91 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
 import { supabase } from "../../../supabase/supabase";
-import { set } from "date-fns";
+import { isToday, set } from "date-fns";
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import dayjs from 'dayjs';
+import { useNavigate } from "react-router-dom";
 
 type UserContextType = {
     user: any;
+    session:any;
     profile: any;   
     loading: boolean;
+    isSubmitting: boolean;
     checkIns: any;
+    existingMotivationalMessage: string | null;
+    lastCheckIn:string | null;
+    motivationalMessage: string | null;
+    handleLogOut: any
+    setMotivationalMessage:React.Dispatch<React.SetStateAction<string | null>>;
+    lastCheckInDate: Date | null;
     updateProfile: (newData: any) => Promise<void>; 
-    submitTodayCheckIn : ({success, date}) => Promise<any>;
+    submitTodayCheckIn : ({success, date}) => Promise<void>;
 };
 
 const UserContext = createContext<UserContextType | null>(null);
 
 export const UserProvider = ({children}:{children:React.ReactNode})=>{
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
+    const localTz = dayjs.tz.guess();
+    const today = dayjs().tz(localTz).startOf('day').format('YYYY-MM-DD');;
+    const [session, setSession] = useState<any>(null);
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [profile, setProfile] = useState<any>(null);
     const [checkIns, setCheckIns] = useState<any>(null);
+    const [lastCheckIn, setLastCheckIn] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [motivationalMessage, setMotivationalMessage] = useState<string | null>(null);
+    const [existingMotivationalMessage, setExistingMotivationalMessage] = useState<string | null>(null);
+    const [lastCheckInDate, setLastCheckInDate] = useState<Date>(null);
+    const navigate = useNavigate();
+    
+    const clearUserData = () => {
+        setUser(null);
+        setProfile(null);
+        setCheckIns(null);
+        setSession(null);
+        setLastCheckIn(null);
+        setMotivationalMessage(null);
+        setExistingMotivationalMessage(null);
+    };
+
+    const handleLogOut = async() =>{
+        setLoading(true);
+        const {error } = await supabase.auth.signOut();
+        if (error) {
+            console.error("Error signing out:", error);
+            return { error: "Failed to sign out" };
+        }
+        else{ // Redirect to landing page
+            clearUserData(); 
+            setLoading(false);
+            navigate("/");
+        }
+    }
+
+    //Authentication
 
     const fetchUserandProfile = async ()=>{
         setLoading(true);
         const {
-            data: {user}
-        } = await supabase.auth.getUser();
-        if(user){
-            setUser(user)
+            data: {session}
+        } = await supabase.auth.getSession();
+        if(session){
+            setSession(session);
+        }
+        if(session?.user){
+            const user = session?.user;
+            setUser(session?.user)
             const {data: profileData, error: profileError} = await supabase.from('profiles').select('*').eq('id', user.id).single();
-            const { data: checkInData, error: checkInError } = await supabase
-            .from('dailycheckins')
-            .select('date_checkin, isSuccess')
-            .eq('user_id', user.id)
-            .order('date_checkin',{ascending:true})
-            if(!profileError && !checkInError){
+            await fetchCheckIns(user);
+            if(!profileError){
                 setProfile(profileData);
-                setCheckIns(checkInData);
             }   
             else{
-                if(checkInError){
-                    console.error("Error while fetching CheckIns:", checkInError);
-                    setCheckIns(null);
-                }
-                if(profileError){
-                    console.error("Profile Fetching Error:", profileError)
-                    setProfile(null)
-                }
+                setProfile(null)       
             }
         }
         else{
@@ -53,46 +94,144 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
             setCheckIns(null)
         }
         setLoading(false);
-    };
 
-  
+        // if(user){
+        //     setUser(user)
+        //     // await getLastCheckIn(user.id)
+        //     const {data: profileData, error: profileError} = await supabase.from('profiles').select('*').eq('id', user.id).single();
+        //     await fetchCheckIns(user);
+        //     if(!profileError){
+        //         setProfile(profileData);
+        //     }   
+        //     else{
+        //         console.log("Profile Fetching Error:", profileError)
+        //         setProfile(null)       
+        //     }
+        // }
+        // else{
+        //     setUser(null);
+        //     setProfile(null);
+        //     setCheckIns(null)
+        // }
+        // setLoading(false);
+
+ 
+    };
+    const fetchCheckIns = async (user:any)=>{
+        if (!user) return;
+        setLoading(true)
+        const { data: checkInData, error: checkInError } = await supabase
+        .from('dailycheckins')
+        .select('date_checkin, isSuccess, message_id')
+        .eq('user_id', user.id)
+        .order('date_checkin',{ascending:false})
+
+        //fixing checkIns = null
+        if(checkInError){
+            setLoading(false);
+            return;
+        }
+        if(!checkInData || checkInData.length === 0){
+            setCheckIns([]);
+            setLastCheckIn(null);
+            setLoading(false);
+            return;
+        }
+        const lastCheckInEntry = checkInData[0];
+        setLastCheckInDate(lastCheckInEntry.date_checkin);
+        const lastCheckInDate = lastCheckInEntry.date_checkin;
+        if(lastCheckInDate === today){
+            const { data: existingMessage, error: existingMessageError } = await supabase
+                    .from('motivational_messages')
+                    .select('message')
+                    .eq('message_id', lastCheckInEntry.message_id)
+                    .single();
+                    if (!existingMessageError && existingMessage) {
+                        setExistingMotivationalMessage(existingMessage.message);
+                      }
+                }
+                setCheckIns(checkInData);
+                setLastCheckIn(lastCheckInDate);
+                setLoading(false);
+        // if(!checkInError){
+        //     const lastCheckIndate = checkInData[0].date_checkin;
+        //     if(lastCheckIndate === today){
+        //         const { data: exisintMessage, error: checkInError } = await supabase
+        //         .from('motivational_messages')
+        //         .select('message')
+        //         .eq('message_id', checkInData[0].message_id)
+        //         .single();
+        //                 if(!checkInError){
+        //                     setExistingMotivationalMessage(exisintMessage.message)
+        //                 }
+        //                 }
+        //     setCheckIns(checkInData)
+        //     setLastCheckIn(lastCheckIndate)
+        // }
+        // else{
+        //     console.log("Error while fetching checkIns: ", checkInError)
+        // }
+        // setLoading(false);
+    }
+
     const updateProfile =async (newData: any)=>{
         const{data: updateData, error: updateError} = await supabase.from('profiles').update(newData).eq('id', user.id);
     }
 
-    //useEffect for DailyCheckIn popup
-    // const fetchCheckIns = async() =>{
-    //     const {data, error} = await supabase.from('dailycheckins').select('date_checkin')
-    //     .eq('user_id', user.id).order('date_checkin',{ascending:true});
-    //     if(error){
-    //         console.error("Error while Fetching CheckIns: ", error);
-    //         setCheckIns(null)
-    //     }
-    //     else{
-    //         setCheckIns(data)
-    //     }
-    //     setLoading(false);
-    // }
     useEffect(()=>{
         fetchUserandProfile();
     },[]); //Do I need a dependency param here?
     const submitTodayCheckIn = async ({success, date})=>{
         const today = new Date().toISOString().split('T')[0];
-        const {error} = await supabase.from('dailycheckins').insert([{user_id: user.id, date_checkin:date,isSuccess: success}])
-        if(error){
-            if(error.code === "23505"){
-                console.log("Already CheckIn For Today");
+        setIsSubmitting(true);
+        try{
+            const motivationalMessagefromDB = await getMotivationalMessage({success: success})
+            const tracking = await submitTodayMotivationalQuoteForTracking({message_id: motivationalMessagefromDB.message_id,date})
+            const {error} = await supabase.from('dailycheckins').insert([{user_id: user.id, date_checkin:date,isSuccess: success,message_id:motivationalMessagefromDB.message_id}])
+
+            if(error){
+                console.error('Error inserting check-in:', error);
+                if(error.code === "23505"){
+                    console.log("Already CheckIn For Today");
+                }
+                else{ 
+                    console.log("Error while Inserting Check-in: ", error)
+                }
+                return null;      
             }
-            else{ 
-                console.log("Error while Inserting Check-in: ", error)
-            }      
-        }
-        else{
-            console.log("Check In Submitted");
-        }
+            else{
+                const refetch = await fetchCheckIns(user)
+                const message = setMotivationalMessage(motivationalMessagefromDB.message);            
+                await Promise.all([tracking, refetch, message]);
+            }
+        }    
+        catch (err) {
+            console.error('Unexpected error in submitTodayCheckIn:', err);
+            return null;
+          } finally {
+            setIsSubmitting(false);
+          }
     }
+    const submitTodayMotivationalQuoteForTracking = async({message_id,date})=>{
+        const {error: insertToUserQuotesTracking} = await supabase.from('user_quotes_tracking').insert([{user_id: user.id, date_shown:date,message_id: message_id}])
+    }
+    const getMotivationalMessage = async ({success})=>{
+        const {data, error} = await supabase.rpc('get_random_message',{
+            is_success: success,
+            user_id: user.id     
+        })
+        if (error) {
+            console.error("Failed to fetch motivational message:", error);
+            return null;
+        }
+        const result = data?.[0];
+        return {
+            message_id: result.id,
+            message: result.message
+          };
+        };
     return(
-        <UserContext.Provider value={{user, profile,updateProfile,checkIns,submitTodayCheckIn,loading}}>
+        <UserContext.Provider value={{handleLogOut, user,session, profile,updateProfile,checkIns, submitTodayCheckIn ,loading, lastCheckIn,isSubmitting,setMotivationalMessage ,motivationalMessage, existingMotivationalMessage, lastCheckInDate}}>
             {children}
         </UserContext.Provider>
     );

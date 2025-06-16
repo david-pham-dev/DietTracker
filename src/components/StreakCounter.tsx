@@ -3,27 +3,55 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Flame, Trophy, Calendar } from "lucide-react";
-
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(utc);
+dayjs.extend(relativeTime);
+dayjs.extend(timezone);
+const localTz = dayjs.tz.guess();
 interface StreakCounterProps {
-  currentStreak?: number;
+  currentStreak?: number | null;
   longestStreak?: number;
   streakGoal?: number;
-  lastCheckIn?: string;
+  lastCheckIn: string |null;
 }
 
-const StreakCounter = ({
-  currentStreak = 0,
-  longestStreak = 0,
+const StreakCounter: React.FC<StreakCounterProps> = ({
+  currentStreak,
+  longestStreak,
   streakGoal = 30,
-  lastCheckIn = "Today",
-}: StreakCounterProps) => {
+  lastCheckIn
+}) => {
   // Calculate progress percentage towards goal
   const progressPercentage = Math.min(
     Math.round((currentStreak / streakGoal) * 100),
     100,
   );
+  const renderLastCheckIn = ()=>{
+    if(!lastCheckIn){
+      return 'No Check In Found'
+    }
+    // const now = dayjs().tz(localTz).startOf('day');
+    const now = dayjs
+    .utc(lastCheckIn)   // convert DB timestamp (UTC) → Day.js
+    .tz(localTz)        // shift to local zone
+    .startOf('day');
+    const checkInDate = dayjs(lastCheckIn);
+    const diffDays = now.diff(checkInDate, 'day');
+    if (diffDays <= 7) {
+      if(diffDays == 0){
+        return "Today";
+      }
+      return checkInDate.from(now); // "3 days ago"
+    }
+    else {
+      return checkInDate.format('DD-MM-YYYY'); // "18-05-2025"
+    }
+  }
 
-  // Determine motivational message based on streak
+  // Determine motivational message based on streak 
   const getMotivationalMessage = () => {
     if (currentStreak === 0) return "Start your streak today!";
     if (currentStreak < 3) return "Great start! Keep going!";
@@ -40,7 +68,7 @@ const StreakCounter = ({
           <CardTitle className="text-2xl font-bold">Your Streak</CardTitle>
           <Badge variant="outline" className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
-            Last check-in: {lastCheckIn}
+            Last check-in: {renderLastCheckIn()}
           </Badge>
         </div>
       </CardHeader>

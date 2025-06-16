@@ -3,7 +3,7 @@ export const handleLogin = async() =>{
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-            redirectTo: "http://localhost:5173/home",
+            redirectTo: "http://localhost:5173/dashboard",
         },
     });
     if (error) {
@@ -12,3 +12,4 @@ export const handleLogin = async() =>{
     }
     return { data };
 }
+

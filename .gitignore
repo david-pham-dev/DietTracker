@@ -31,4 +31,8 @@ dist-ssr
 core
 
 .github/
-
+# Env files
+.env
+.env.local
+.env.production
+.env.development

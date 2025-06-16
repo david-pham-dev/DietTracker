@@ -22,7 +22,7 @@ const LoginPage = () => {
           <div className="rounded-full bg-primary p-2">
             <TrendingUpIcon className="h-6 w-6 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold">OMAD/Keto Streak Tracker</h1>
+          <h1 className="text-2xl font-bold">InShape Diet Tracker</h1>
           <p className="text-muted-foreground">Login to continue your streak</p>
         </div>
 
