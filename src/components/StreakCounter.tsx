@@ -4,8 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Flame, Trophy, Calendar } from "lucide-react";
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(utc);
 dayjs.extend(relativeTime);
+dayjs.extend(timezone);
+const localTz = dayjs.tz.guess();
 interface StreakCounterProps {
   currentStreak?: number | null;
   longestStreak?: number;
@@ -24,25 +29,23 @@ const StreakCounter: React.FC<StreakCounterProps> = ({
     Math.round((currentStreak / streakGoal) * 100),
     100,
   );
-  if(lastCheckIn){
-    console.log("this is lastCheckIn in streakCounter: ", lastCheckIn)
-  }
-  else{
-    console.log('there is no lastCheckin')
-  }
   const renderLastCheckIn = ()=>{
     if(!lastCheckIn){
       return 'No Check In Found'
     }
-    const now = dayjs();
+    // const now = dayjs().tz(localTz).startOf('day');
+    const now = dayjs
+    .utc(lastCheckIn)   // convert DB timestamp (UTC) → Day.js
+    .tz(localTz)        // shift to local zone
+    .startOf('day');
     const checkInDate = dayjs(lastCheckIn);
     const diffDays = now.diff(checkInDate, 'day');
-    if ( diffDays <= 7) {
-      return checkInDate.fromNow(); // "3 days ago"
+    if (diffDays <= 7) {
+      if(diffDays == 0){
+        return "Today";
+      }
+      return checkInDate.from(now); // "3 days ago"
     }
-    else if(diffDays === 0){
-      return "Today";
-    } 
     else {
       return checkInDate.format('DD-MM-YYYY'); // "18-05-2025"
     }

@@ -24,13 +24,8 @@ import {
 } from "lucide-react";
 import { useUser } from "@/types/hook/useUserData1";
 import CheckLoginSeamlessly from "./helper/checkLoginSeamlessly";
-
 const LandingPage = () => {
   const {user,session} = useUser();
-  if(user && session){
-    console.log('this is user in LandingPage: ', user)
-    console.log('this is session in LandingPage: ', session)
-  }
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -248,8 +243,8 @@ const LandingPage = () => {
           <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
             How Small Habits Changed Everything
           </h2>
-          <p className="max-w-[1000px] text-muted-foreground md:text-xl">
-            I used to overthink health. But once I focused on simple, consistent habits—like eating mindfully and tracking my meals—real change began. This app is a result of that journey.
+          <p className="max-w-[1000px] text-muted-foreground md:text-l">
+           Fat, Ugly, Wake Up With No Energy, That Used To Be Me. But once I decided to change my life based on simple, consistent habits—like eating mindfully and tracking my meals— my life changes. This app is a result of that journey.
           </p>
         </div>
       </div>
@@ -263,13 +258,13 @@ const LandingPage = () => {
               </div>
               <div>
                 <CardTitle className="text-lg">The Turning Point</CardTitle>
-                <CardDescription>Letting Go of Extremes</CardDescription>
+                <CardDescription>TIRED OF BEING UGLY</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              "I stopped chasing perfect diets and started building sustainable habits. One small step at a time—it made all the difference."
+              "I decided I don't want to be fat and out-of-shape anymore. I want to regain the control of mylife - IT ALL STARTS WITH MY PHYSICALITY."
             </p>
             <div className="mt-4">
               <Badge variant="outline" className="bg-primary/10">
@@ -287,7 +282,7 @@ const LandingPage = () => {
               </div>
               <div>
                 <CardTitle className="text-lg">The Progress</CardTitle>
-                <CardDescription>Tracking What Matters</CardDescription>
+                <CardDescription>IF YOU NOT TRACKING - YOU ARE SLACKING</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -310,7 +305,7 @@ const LandingPage = () => {
                 <HeartIcon className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <CardTitle className="text-lg">The Mission</CardTitle>
+                <CardTitle className="text-lg">MY MISSION</CardTitle>
                 <CardDescription>Building It for You</CardDescription>
               </div>
             </div>
@@ -527,16 +522,18 @@ const LandingPage = () => {
               </h2>
               <p className="max-w-[600px] text-muted-foreground md:text-xl">
                 Join thousands of others who are successfully building healthy
-                habits with our OMAD/Keto Streak Tracker.
+                habits with our Streak Tracker.
               </p>
             </div>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
-            <Link to="/login">
+            <CheckLoginSeamlessly session={session}
+            text="All Greatness Comes From The Smallest Step" className="gap-1 bg-green-600 hover:bg-green-700 active:bg-green-600 focus:bg-green-600"/>
+            {/* <Link to="/login">
                 <Button size="lg" className="gap-1 bg-green-600 hover:bg-green-700 active:bg-green-600 focus:bg-green-600">
                   All Greatness Comes From The Smallest Step  
                   <ArrowRightIcon className="h-4 w-4" />
                 </Button>
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>
@@ -550,10 +547,10 @@ const LandingPage = () => {
               <div className="rounded-full bg-primary p-1">
                 <TrendingUpIcon className="h-5 w-5 text-primary-foreground" />
               </div>
-              <h3 className="text-xl font-bold">OMAD/Keto Streak Tracker</h3>
+              <h3 className="text-xl font-bold">InShape Diet Tracker</h3>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2023 OMAD/Keto Streak Tracker. All rights reserved.
+              © 2025 InShape Diet Tracker. All rights reserved.
             </p>
           </div>
           <div className="flex gap-4">

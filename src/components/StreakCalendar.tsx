@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
+import dayjs from 'dayjs';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DayPicker } from 'react-day-picker';
@@ -13,14 +14,8 @@ import {
   parseISO
 } from "date-fns";
 
-interface StreakDay {
-  checkIns: { date_checkin: string, isSuccess: boolean }[]; 
-  // omad: boolean;
-  // keto: boolean;
-}
 
 interface StreakCalendarProps {
-  // streakData?: StreakDay[];
   checkIns: { date_checkin: string, isSuccess: boolean }[]; 
   currentMonth?: Date;
   onMonthChange?: (date: Date) => void;
@@ -47,22 +42,50 @@ const StreakCalendar = ({
 
   // Function to determine day class based on streak data
   const getDayClass = (day: Date) => {
-    const streakDay = checkIns.find((d) => isSameDay(parseISO(d.date_checkin), day));
-    console.log("this is streakDay: ", streakDay)
-    if (!streakDay) return "";
-    if (streakDay) {
-      return "bg-green-500 text-white rounded-full";
-    } 
-    else {
-      return "bg-red-500 text-white rounded-full";
-    }
+    // const streakDay = checkIns.find((d) => isSameDay(parseISO(d.date_checkin), day));
+    // console.log("this is streakDay: ", streakDay)
+    // if (!streakDay) return "";
+    // if (streakDay) {
+    //   return "bg-green-500 text-white rounded-full";
+    // } 
+    // else {
+    //   return "bg-red-500 text-white rounded-full";
+    // }
   };
-  const modifiers = checkIns.reduce((acc, data) => {
+  // 1. Sort checkIns by date
+const sorted = [...checkIns].sort((a, b) =>
+  new Date(a.date_checkin).getTime() - new Date(b.date_checkin).getTime()
+);
+
+// 2. Build a full calendar
+if (sorted.length == 0) {
+  return []; 
+}
+const startDate = dayjs(sorted[0].date_checkin);
+const endDate = dayjs(); // today
+const checkInMap = new Map(
+  checkIns.map(item => [dayjs(item.date_checkin).format('YYYY-MM-DD'), item])
+);
+
+const fullCheckIns = [];
+for (let d = startDate; d.isBefore(endDate) || d.isSame(endDate, 'day'); d = d.add(1, 'day')) {
+  const key = d.format('YYYY-MM-DD');
+  const entry = checkInMap.get(key);
+  if (entry) {
+    fullCheckIns.push(entry);
+  } else {
+    fullCheckIns.push({
+      date_checkin: key,
+      isSuccess: false, // This day was missed
+    });
+  }
+}
+
+  const modifiers = fullCheckIns.reduce((acc, data) => {
     const date = parseISO(data.date_checkin); // JS Date object 
     const key = data.isSuccess ? 'success' : 'failure';
     if (!acc[key]) acc[key] = [];
     acc[key].push(date);
-    console.log("this is accKey: ", acc['failure'])
     return acc;
   }, {} as Record<'success' | 'failure', Date[]>);
   
@@ -85,7 +108,7 @@ const StreakCalendar = ({
               month: "bg-white rounded-lg shadow-sm p-3",
               day_selected: "bg-transparent",
               day: "h-8 w-8 p-0 font-normal aria-selected:opacity-100",
-              day_today: getDayClass(new Date())
+              // day_today: getDayClass(new Date())
             }}
             modifiers={modifiers}
             modifiersClassNames={{
@@ -98,19 +121,11 @@ const StreakCalendar = ({
           <div className="flex flex-wrap gap-4 justify-center mt-4">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-green-500"></div>
-              <span className="text-sm">Both OMAD & Keto</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-yellow-400"></div>
-              <span className="text-sm">Either OMAD or Keto</span>
+              <span className="text-sm">Sticked to your commitments</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-full bg-red-500"></div>
-              <span className="text-sm">Streak Broken</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full border border-gray-300"></div>
-              <span className="text-sm">No Data</span>
+              <span className="text-sm">Either Fail or Forget</span>
             </div>
           </div>
 

@@ -22,15 +22,21 @@ import {
   AlertCircleIcon,
   ArrowRightIcon,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import StreakCounter from "./StreakCounter";
 import DailyCheckIn from "./DailyCheckIn";
 import StreakCalendar from "./StreakCalendar";
 import ProgressCharts from "./ProgressCharts";
 import { useUser } from "@/types/hook/useUserData1";
 import { useStreakCounter } from "@/types/hook/useStreakCounter";
-const Home= () => {
+const Dashboard= () => {
   const navigate = useNavigate();
-  const {user, loading, profile, checkIns, submitTodayCheckIn, lastCheckIn, isSubmitting, motivationalMessage, existingMotivationalMessage} = useUser(); 
+  const {handleLogOut ,user, loading, profile, checkIns, submitTodayCheckIn, lastCheckIn, isSubmitting, motivationalMessage, existingMotivationalMessage, lastCheckInDate} = useUser(); 
   const [subscription, setSubscription] = useState({
     status: "loading", // loading, active, free, expired
     type: "", // free, monthly, lifetime
@@ -39,7 +45,7 @@ const Home= () => {
   const [showModal, setShowModal] = useState(false);
   const [showProgressOverlay, setShowProgressOverlay] = useState(true);
   const [showAchievementsOverlay, setShowAchievementsOverlay] = useState(true);
-  const { currentStreak, longestStreak } = useStreakCounter(checkIns);
+  const { currentStreak, longestStreak} = useStreakCounter(checkIns, lastCheckInDate);
 //take user data
   useEffect(()=>{
     if(!loading && !user && !profile &&!checkIns){
@@ -47,21 +53,6 @@ const Home= () => {
     }
   },[user,loading, profile, checkIns, lastCheckIn])
   if (loading) return <p>Loading Data.......</p>;
-  // if(lastCheckIn) {
-  //   console.log('this is lastCheckIn in home.tsx: ', lastCheckIn)
-  // }
-  // else{
-  //   console.log('there is no lastCheckIn in home.tsx');
-  // }
-if(motivationalMessage){
-  console.log('this is motivational message in Home.tsx: ', motivationalMessage)
-}
-if(existingMotivationalMessage){
-  console.log('this is existing message in Home.tsx: ', existingMotivationalMessage)
-}
-  // Mock function to check subscription status
-  // In a real app, this would fetch from your database
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -71,7 +62,7 @@ if(existingMotivationalMessage){
             <div className="rounded-full bg-primary p-1">
               <TrendingUpIcon className="h-5 w-5 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold">OMAD/Keto Streak Tracker</h1>
+            <h1 className="text-xl font-bold">InShape Diet Tracker</h1>
           </div>
           <div className="flex items-center gap-2">          
               <div className="text-sm text-muted-foreground">
@@ -83,15 +74,29 @@ if(existingMotivationalMessage){
               <UserIcon className="mr-2 h-4 w-4" />
               Profile
             </Button>
-            {profile && (
+            {/* {profile && (
                 <Avatar>
                   <AvatarImage 
                     src={profile.avatar_url} 
                     alt="User" 
-                  />
+                  />  
                   <AvatarFallback>{profile?.full_name?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
                 </Avatar>
-              )}
+              )} */}
+            {profile &&
+            <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Avatar className="cursor-pointer">
+                <AvatarImage src={profile.avatar_url} alt="User" />
+                <AvatarFallback>{profile?.full_name?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {/* <DropdownMenuItem onClick={() => navigate("/profile")}>Profile</DropdownMenuItem> */}
+              <DropdownMenuItem onClick={handleLogOut}>Logout</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+            }
           </div>
         </div>
       </header>
@@ -366,7 +371,7 @@ if(existingMotivationalMessage){
       <footer className="border-t bg-card">
         <div className="container flex h-16 items-center justify-between px-4">
           <p className="text-sm text-muted-foreground">
-            © 2025 InShape Diet Streak Tracker
+            © 2025 InShape Diet Tracker
           </p>
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm">
@@ -422,4 +427,4 @@ const achievements = [
   },
 ];
 
-export default Home;
+export default Dashboard;

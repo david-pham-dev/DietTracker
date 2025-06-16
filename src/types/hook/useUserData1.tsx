@@ -1,7 +1,10 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
 import { supabase } from "../../../supabase/supabase";
-import { isToday } from "date-fns";
-
+import { isToday, set } from "date-fns";
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+import dayjs from 'dayjs';
+import { useNavigate } from "react-router-dom";
 
 type UserContextType = {
     user: any;
@@ -13,7 +16,9 @@ type UserContextType = {
     existingMotivationalMessage: string | null;
     lastCheckIn:string | null;
     motivationalMessage: string | null;
+    handleLogOut: any
     setMotivationalMessage:React.Dispatch<React.SetStateAction<string | null>>;
+    lastCheckInDate: Date | null;
     updateProfile: (newData: any) => Promise<void>; 
     submitTodayCheckIn : ({success, date}) => Promise<void>;
 };
@@ -21,6 +26,10 @@ type UserContextType = {
 const UserContext = createContext<UserContextType | null>(null);
 
 export const UserProvider = ({children}:{children:React.ReactNode})=>{
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
+    const localTz = dayjs.tz.guess();
+    const today = dayjs().tz(localTz).startOf('day').format('YYYY-MM-DD');;
     const [session, setSession] = useState<any>(null);
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -30,8 +39,32 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [motivationalMessage, setMotivationalMessage] = useState<string | null>(null);
     const [existingMotivationalMessage, setExistingMotivationalMessage] = useState<string | null>(null);
-    const today = new Date().toISOString().split('T')[0];
+    const [lastCheckInDate, setLastCheckInDate] = useState<Date>(null);
+    const navigate = useNavigate();
+    
+    const clearUserData = () => {
+        setUser(null);
+        setProfile(null);
+        setCheckIns(null);
+        setSession(null);
+        setLastCheckIn(null);
+        setMotivationalMessage(null);
+        setExistingMotivationalMessage(null);
+    };
 
+    const handleLogOut = async() =>{
+        setLoading(true);
+        const {error } = await supabase.auth.signOut();
+        if (error) {
+            console.error("Error signing out:", error);
+            return { error: "Failed to sign out" };
+        }
+        else{ // Redirect to landing page
+            clearUserData(); 
+            setLoading(false);
+            navigate("/");
+        }
+    }
 
     //Authentication
 
@@ -52,7 +85,6 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
                 setProfile(profileData);
             }   
             else{
-                console.log("Profile Fetching Error:", profileError)
                 setProfile(null)       
             }
         }
@@ -93,26 +125,53 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
         .select('date_checkin, isSuccess, message_id')
         .eq('user_id', user.id)
         .order('date_checkin',{ascending:false})
-        if(!checkInError){
-            const lastCheckIndate = checkInData[0].date_checkin;
-            if(lastCheckIndate === today){
-                const { data: exisintMessage, error: checkInError } = await supabase
-                .from('motivational_messages')
-                .select('message')
-                .eq('message_id', checkInData[0].message_id)
-                .single();
-                        if(!checkInError){
-                            setExistingMotivationalMessage(exisintMessage.message)
-                        }
-                        }
-            setCheckIns(checkInData)
-            setLastCheckIn(lastCheckIndate)
-        }
-        else{
-            console.log("Error while fetching checkIns: ", checkInError)
-        }
-        setLoading(false);
 
+        //fixing checkIns = null
+        if(checkInError){
+            setLoading(false);
+            return;
+        }
+        if(!checkInData || checkInData.length === 0){
+            setCheckIns([]);
+            setLastCheckIn(null);
+            setLoading(false);
+            return;
+        }
+        const lastCheckInEntry = checkInData[0];
+        setLastCheckInDate(lastCheckInEntry.date_checkin);
+        const lastCheckInDate = lastCheckInEntry.date_checkin;
+        if(lastCheckInDate === today){
+            const { data: existingMessage, error: existingMessageError } = await supabase
+                    .from('motivational_messages')
+                    .select('message')
+                    .eq('message_id', lastCheckInEntry.message_id)
+                    .single();
+                    if (!existingMessageError && existingMessage) {
+                        setExistingMotivationalMessage(existingMessage.message);
+                      }
+                }
+                setCheckIns(checkInData);
+                setLastCheckIn(lastCheckInDate);
+                setLoading(false);
+        // if(!checkInError){
+        //     const lastCheckIndate = checkInData[0].date_checkin;
+        //     if(lastCheckIndate === today){
+        //         const { data: exisintMessage, error: checkInError } = await supabase
+        //         .from('motivational_messages')
+        //         .select('message')
+        //         .eq('message_id', checkInData[0].message_id)
+        //         .single();
+        //                 if(!checkInError){
+        //                     setExistingMotivationalMessage(exisintMessage.message)
+        //                 }
+        //                 }
+        //     setCheckIns(checkInData)
+        //     setLastCheckIn(lastCheckIndate)
+        // }
+        // else{
+        //     console.log("Error while fetching checkIns: ", checkInError)
+        // }
+        // setLoading(false);
     }
 
     const updateProfile =async (newData: any)=>{
@@ -123,7 +182,6 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
         fetchUserandProfile();
     },[]); //Do I need a dependency param here?
     const submitTodayCheckIn = async ({success, date})=>{
-        console.log('Starting submitTodayCheckIn with:', { success, date });
         const today = new Date().toISOString().split('T')[0];
         setIsSubmitting(true);
         try{
@@ -142,21 +200,9 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
                 return null;      
             }
             else{
-                console.log('Check-in inserted successfully, fetching motivational message');
-                // const motivationalMessagefromDB = await getMotivationalMessage({success: success})
-                console.log('Received motivational message:', motivationalMessagefromDB);
-                
-                console.log('Submitting motivational quote for tracking');
-                // const tracking = await submitTodayMotivationalQuoteForTracking({message_id: motivationalMessagefromDB.message_id,date})
-                
-                console.log('Refetching check-ins');
                 const refetch = await fetchCheckIns(user)
-                
-                console.log('Setting motivational message:', motivationalMessagefromDB.message);
-                const message = setMotivationalMessage(motivationalMessagefromDB.message);
-                
+                const message = setMotivationalMessage(motivationalMessagefromDB.message);            
                 await Promise.all([tracking, refetch, message]);
-                console.log("Check In Submitted successfully");
             }
         }    
         catch (err) {
@@ -168,28 +214,8 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
     }
     const submitTodayMotivationalQuoteForTracking = async({message_id,date})=>{
         const {error: insertToUserQuotesTracking} = await supabase.from('user_quotes_tracking').insert([{user_id: user.id, date_shown:date,message_id: message_id}])
-        // const {error: insertToDailyCheckInsError} = await supabase
-        //     .from('dailycheckins')
-        //     .update({ message_id: message_id })
-        //     .eq('user_id', user.id)
-        //     .eq('date_checkin', date);
-        // console.log('this is messageId: ', message_id)
-        // console.log('this is userId: ', user.id)
-        // console.log('this is datecheckin: ', date)
-        // if(insertToDailyCheckInsError) {
-        //     console.error('Error updating dailycheckins:', insertToDailyCheckInsError);
-        // }
-        if(Error){
-            if(insertToUserQuotesTracking){
-                console.log('Error while adding data to user_quotes_tracking: ', insertToUserQuotesTracking)
-            }
-        }
-        else{
-            console.log("Quotes Added to both dailyCheckIns and userQuotesTracking");
-        }
     }
     const getMotivationalMessage = async ({success})=>{
-        console.log('Fetching motivational message for success:', success);
         const {data, error} = await supabase.rpc('get_random_message',{
             is_success: success,
             user_id: user.id     
@@ -198,7 +224,6 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
             console.error("Failed to fetch motivational message:", error);
             return null;
         }
-        console.log('Received data from get_random_message:', data);
         const result = data?.[0];
         return {
             message_id: result.id,
@@ -206,7 +231,7 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
           };
         };
     return(
-        <UserContext.Provider value={{user,session, profile,updateProfile,checkIns, submitTodayCheckIn ,loading, lastCheckIn,isSubmitting,setMotivationalMessage ,motivationalMessage, existingMotivationalMessage}}>
+        <UserContext.Provider value={{handleLogOut, user,session, profile,updateProfile,checkIns, submitTodayCheckIn ,loading, lastCheckIn,isSubmitting,setMotivationalMessage ,motivationalMessage, existingMotivationalMessage, lastCheckInDate}}>
             {children}
         </UserContext.Provider>
     );

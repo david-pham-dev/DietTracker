@@ -43,15 +43,10 @@ const Profile = () => {
   const handleSubmitData = async(e:React.FormEvent)=>{
     e.preventDefault();
     await updateProfile({Age: Number(age), Weight: Number(weight),full_name: String(fullName),Height: Number(height)});
-    console.log({Age: Number(age), Weight: Number(weight),full_name: String(fullName),Height: Number(height)})
     alert('Profile Updated Successfully')
     navigate("/home")
   }
   if (loading) return <p>Loading Data.......</p>;
-  if(profile){
-    console.log("this is profile in EditProfile page:", profile)
-    console.log("user:", user)
-  }
 
   return (
     <div className="container px-4 py-6 max-w-4xl mx-auto bg-background min-h-screen">
@@ -311,7 +306,7 @@ const Profile = () => {
           </CardContent>
 
           <CardFooter className="flex flex-col sm:flex-row justify-between gap-4 border-t pt-6">
-          <Link to="/home" className="mr-4">
+          <Link to="/dashboard" className="mr-4">
             <Button variant="outline" type="button">
               Cancel
             </Button>
@@ -331,7 +326,7 @@ const Profile = () => {
             <DialogTitle>Complete Your Profile</DialogTitle>
             <DialogDescription>
               Please fill in your age and weight to get the most out of your
-              OMAD/Keto tracking experience.
+              tracking experience.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">

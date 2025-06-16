@@ -7,12 +7,16 @@ export interface DailyCheckIn {
   message_id: number;
 }
 
-export const useStreakCounter = (checkIns: DailyCheckIn[] | null) => {
+export const useStreakCounter = (checkIns: DailyCheckIn[] | null, lastCheckInDate: Date) => {
   const [currentStreak, setCurrentStreak] = useState<number>(0);
   const [longestStreak, setLongestStreak] = useState<number>(0);
 
   useEffect(() => {
-    if (!checkIns || checkIns.length === 0) return;
+    if (!checkIns || checkIns.length === 0){
+      setCurrentStreak(0);
+      setLongestStreak(0);
+      return; 
+    } 
 
     let curr = 0;
     let max = 0;
@@ -21,7 +25,6 @@ export const useStreakCounter = (checkIns: DailyCheckIn[] | null) => {
     const sorted = [...checkIns].sort(
       (a, b) => new Date(a.date_checkin).getTime() - new Date(b.date_checkin).getTime()
     );
-
     for (const entry of sorted) {
       const date = new Date(entry.date_checkin);
       if (!entry.isSuccess) {
@@ -39,10 +42,18 @@ export const useStreakCounter = (checkIns: DailyCheckIn[] | null) => {
       if (curr > max) max = curr;
       prevDate = date;
     }
-
-    setCurrentStreak(curr);
+    const today = new Date();
+    const daysSinceLastCheckIn = differenceInCalendarDays(today, lastCheckInDate);
+    if(daysSinceLastCheckIn > 1){
+      setCurrentStreak(0);
+    }
+    else if(daysSinceLastCheckIn === 1){
+      setCurrentStreak(curr)
+    }
+    else{
+      setCurrentStreak(curr)
+    }
     setLongestStreak(max);
   }, [checkIns]);
-
   return { currentStreak, longestStreak };
 };
