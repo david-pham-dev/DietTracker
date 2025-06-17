@@ -1,6 +1,5 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
 import { supabase } from "../../../supabase/supabase";
-import { isToday, set } from "date-fns";
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import dayjs from 'dayjs';
@@ -70,12 +69,10 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
 
     const fetchUserandProfile = async ()=>{
         setLoading(true);
-        const {
-            data: {session}
-        } = await supabase.auth.getSession();
-        if(session){
+        supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
-        }
+            setLoading(false);
+          });
         if(session?.user){
             const user = session?.user;
             setUser(session?.user)
@@ -94,26 +91,6 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
             setCheckIns(null)
         }
         setLoading(false);
-
-        // if(user){
-        //     setUser(user)
-        //     // await getLastCheckIn(user.id)
-        //     const {data: profileData, error: profileError} = await supabase.from('profiles').select('*').eq('id', user.id).single();
-        //     await fetchCheckIns(user);
-        //     if(!profileError){
-        //         setProfile(profileData);
-        //     }   
-        //     else{
-        //         console.log("Profile Fetching Error:", profileError)
-        //         setProfile(null)       
-        //     }
-        // }
-        // else{
-        //     setUser(null);
-        //     setProfile(null);
-        //     setCheckIns(null)
-        // }
-        // setLoading(false);
 
  
     };
@@ -179,7 +156,17 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
     }
 
     useEffect(()=>{
-        fetchUserandProfile();
+        fetchUserandProfile()
+        const {
+            data: { subscription },
+          } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+            setUser(session?.user ?? null);
+          });
+      
+          return () => {
+            subscription.unsubscribe(); // Prevent memory leaks
+          };;
     },[]); //Do I need a dependency param here?
     const submitTodayCheckIn = async ({success, date})=>{
         const today = new Date().toISOString().split('T')[0];

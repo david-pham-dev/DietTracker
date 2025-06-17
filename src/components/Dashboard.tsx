@@ -53,6 +53,8 @@ const Dashboard= () => {
     }
   },[user,loading, profile, checkIns, lastCheckIn])
   if (loading) return <p>Loading Data.......</p>;
+  
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
