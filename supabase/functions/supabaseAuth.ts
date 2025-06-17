@@ -3,7 +3,7 @@ export const handleLogin = async() =>{
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-            redirectTo: "http://localhost:5173/dashboard",
+            redirectTo: "https://diet-tracker-foxx.vercel.app/dashboard",
         },
     });
     if (error) {
