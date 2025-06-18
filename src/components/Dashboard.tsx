@@ -356,10 +356,10 @@ const Dashboard= () => {
                       size="lg" 
                       variant="outline"
                       className="w-full hover:bg-primary/10 transition-all"
-                      onClick={() => navigate('/testimonials')}
+                      onClick={() => navigate('/journey')}
                     >
                       <ArrowRightIcon className="mr-2 h-5 w-5" />
-                      Read Our Stories
+                      Read My Story
                     </Button>
                   </div>
                 </div>
@@ -375,14 +375,14 @@ const Dashboard= () => {
           <p className="text-sm text-muted-foreground">
             © 2025 InShape Diet Tracker
           </p>
-          <div className="flex items-center gap-4">
+          {/* <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm">
               Help
             </Button>
             <Button variant="ghost" size="sm">
               Settings
             </Button>
-          </div>
+          </div> */}
         </div>
       </footer>
     </div>
