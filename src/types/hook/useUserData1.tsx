@@ -40,7 +40,6 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
     const [existingMotivationalMessage, setExistingMotivationalMessage] = useState<string | null>(null);
     const [lastCheckInDate, setLastCheckInDate] = useState<Date>(null);
     const navigate = useNavigate();
-    
     const clearUserData = () => {
         setUser(null);
         setProfile(null);
@@ -69,10 +68,21 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
 
     const fetchUserandProfile = async ()=>{
         setLoading(true);
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setLoading(false);
-          });
+        //handle hash(depreciated)
+        // if(window.location.hash.includes('access_token')){
+        //     const { data, error } = await supabase.auth.();
+        //     if (error) {
+        //       console.error('Error processing URL session:', error);
+        //     } else {
+        //       setSession(data.session);
+        //       window.history.replaceState({}, document.title, window.location.pathname); // Clean up URL
+        //     }
+        // }
+        //fetch session
+        // supabase.auth.getSession().then(({ data: { session } }) => {
+        //     setSession(session);
+        //     setLoading(false);
+        //   });
         if(session?.user){
             const user = session?.user;
             setUser(session?.user)
@@ -156,12 +166,12 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
     }
 
     useEffect(()=>{
-        fetchUserandProfile()
         const {
             data: { subscription },
           } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
-            setUser(session?.user ?? null);
+            // setUser(session?.user ?? null);
+            fetchUserandProfile()
           });
       
           return () => {
