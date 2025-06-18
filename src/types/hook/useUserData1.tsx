@@ -67,6 +67,7 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
     //Authentication
 
     const fetchUserandProfile = async ()=>{
+        if(!user) return;
         setLoading(true);
         //handle hash(depreciated)
         // if(window.location.hash.includes('access_token')){
@@ -79,13 +80,17 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
         //     }
         // }
         //fetch session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setLoading(false);
-          });
-        if(session?.user){
-            const user = session?.user;
-            setUser(session?.user)
+        // supabase.auth.getSession().then(({ data: { session } }) => {
+        //     setSession(session);
+        //     if(session?.user){
+        //         const user = session?.user;
+        //         setUser(user)
+        //     }
+        //     setLoading(false);
+        //   });
+        if(user){
+            // const user = session?.user;
+            // setUser(user)
             const {data: profileData, error: profileError} = await supabase.from('profiles').select('*').eq('id', user.id).single();
             await fetchCheckIns(user);
             if(!profileError){
@@ -164,7 +169,17 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
     }
 
     useEffect(()=>{
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+            if(session?.user){
+                setUser(session.user)
+            }
+          });
+    },[])
+    useEffect(()=>{
         fetchUserandProfile();
+    },[user]); //Do I need a dependency param here?
+    useEffect(()=>{
         const {
             data: { subscription },
           } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -174,7 +189,7 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
           return () => {
             subscription.unsubscribe(); // Prevent memory leaks
           };;
-    },[]); //Do I need a dependency param here?
+    },[])
     const submitTodayCheckIn = async ({success, date})=>{
         const today = new Date().toISOString().split('T')[0];
         setIsSubmitting(true);

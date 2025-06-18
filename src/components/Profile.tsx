@@ -52,7 +52,7 @@ const Profile = () => {
     <div className="container px-4 py-6 max-w-4xl mx-auto bg-background min-h-screen">
       {/* Header with back button */}
       <div className="flex items-center mb-6">
-        <Link to="/home" className="mr-4">
+        <Link to="/dashboard" className="mr-4">
           <Button variant="ghost" size="sm">
             <ArrowLeftIcon className="mr-2 h-4 w-4" />
             Back
