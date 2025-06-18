@@ -79,10 +79,10 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
         //     }
         // }
         //fetch session
-        // supabase.auth.getSession().then(({ data: { session } }) => {
-        //     setSession(session);
-        //     setLoading(false);
-        //   });
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setLoading(true);
+            setSession(session);
+          });
         if(session?.user){
             const user = session?.user;
             setUser(session?.user)
@@ -166,14 +166,13 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
     }
 
     useEffect(()=>{
+        fetchUserandProfile();
         const {
             data: { subscription },
           } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
-            // setUser(session?.user ?? null);
-            fetchUserandProfile()
+            setUser(session?.user ?? null);
           });
-      
           return () => {
             subscription.unsubscribe(); // Prevent memory leaks
           };;
