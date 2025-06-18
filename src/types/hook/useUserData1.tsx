@@ -33,7 +33,7 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [profile, setProfile] = useState<any>(null);
-    const [checkIns, setCheckIns] = useState<any>(null);
+    const [checkIns, setCheckIns] = useState<any>([]);
     const [lastCheckIn, setLastCheckIn] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [motivationalMessage, setMotivationalMessage] = useState<string | null>(null);
