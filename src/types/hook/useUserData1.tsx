@@ -80,8 +80,8 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
         // }
         //fetch session
         supabase.auth.getSession().then(({ data: { session } }) => {
-            setLoading(true);
             setSession(session);
+            setLoading(false);
           });
         if(session?.user){
             const user = session?.user;
@@ -100,9 +100,7 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
             setProfile(null);
             setCheckIns([])
         }
-        setLoading(false);
-
- 
+        setLoading(false); 
     };
     const fetchCheckIns = async (user:any)=>{
         if (!user) return;
