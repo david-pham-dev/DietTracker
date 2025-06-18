@@ -98,7 +98,7 @@ export const UserProvider = ({children}:{children:React.ReactNode})=>{
         else{
             setUser(null);
             setProfile(null);
-            setCheckIns(null)
+            setCheckIns([])
         }
         setLoading(false);
 

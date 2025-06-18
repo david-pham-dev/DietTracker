@@ -53,9 +53,13 @@ const StreakCalendar = ({
     // }
   };
   // 1. Sort checkIns by date
-const sorted = [...checkIns].sort((a, b) =>
-  new Date(a.date_checkin).getTime() - new Date(b.date_checkin).getTime()
-);
+// const sorted = [...checkIns].sort((a, b) =>
+//   new Date(a.date_checkin).getTime() - new Date(b.date_checkin).getTime()
+// );
+const sorted = Array.isArray(checkIns)
+  ? [...checkIns].sort((a, b) => new Date(a.date_checkin).getTime() - new Date(b.date_checkin).getTime())
+  : [];
+
 
 // 2. Build a full calendar
 if (sorted.length == 0) {
