@@ -44,7 +44,7 @@ const Profile = () => {
     e.preventDefault();
     await updateProfile({Age: Number(age), Weight: Number(weight),full_name: String(fullName),Height: Number(height)});
     alert('Profile Updated Successfully')
-    navigate("/home")
+    navigate("/dashboard")
   }
   if (loading) return <p>Loading Data.......</p>;
 
