@@ -21,8 +21,10 @@ import {
   StarIcon,
   MessageSquareIcon,
   CreditCardIcon,
+  ArrowRightCircleIcon
 } from "lucide-react";
 import { useUser } from "@/types/hook/useUserData1";
+import { motion } from "framer-motion";
 import CheckLoginSeamlessly from "./helper/checkLoginSeamlessly";
 const LandingPage = () => {
   const {user,session} = useUser();
@@ -323,13 +325,21 @@ const LandingPage = () => {
         </Card>
       </div>
 
-      <div className="text-center">
+      <div className="flex justify-center">
         <Link to="/journey">
-          <Button variant="outline" className="gap-2">
+          {/* <Button variant="outline" className="gap-2">
             <MessageSquareIcon className="h-4 w-4" />
             Read the Full Story
-          </Button>
-        </Link>
+          </Button> */}
+  <motion.button
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+    className="flex items-center border border-black/70 text-black/80 bg-white/10 px-5 py-3 rounded-2xl font-semibold shadow-md hover:bg-white hover:text-black transition"
+  >
+  <ArrowRightCircleIcon className="h-5 w-5  text-black/80" />
+  See How I Turned My Life Around
+</motion.button>
+        </Link> 
       </div>
     </div>
   </section>
@@ -506,6 +516,7 @@ const LandingPage = () => {
                       </svg>
                       Shoot me a DM on Instagram
                     </Button>
+                    
         </div>
     </div>
   </div>

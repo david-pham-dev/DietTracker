@@ -28,11 +28,6 @@ const StreakCalendar = ({
   currentMonth = new Date(),
   onMonthChange = () => {},
 }: StreakCalendarProps) => {
-  useEffect(()=>{
-    if(checkIns){
-      console.log("this is checkIns from StreakCalendar: ",checkIns)
-    }
-  })
   const [month, setMonth] = useState<Date>(currentMonth);
 
   const handleMonthChange = (date: Date) => {
