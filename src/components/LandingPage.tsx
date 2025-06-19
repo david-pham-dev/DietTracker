@@ -565,21 +565,21 @@ const LandingPage = () => {
             </p>
           </div>
           <div className="flex gap-4">
-            <Link to="/terms">
+            {/* <Link to="/terms">
               <Button variant="ghost" size="sm">
                 Terms
               </Button>
-            </Link>
+            </Link> */}
             <Link to="/privacy">
               <Button variant="ghost" size="sm">
                 Privacy
               </Button>
             </Link>
-            <Link to="/contact">
+            {/* <Link to="/contact">
               <Button variant="ghost" size="sm">
                 Contact
               </Button>
-            </Link>
+            </Link> */}
           </div>
         </div>
       </footer>
