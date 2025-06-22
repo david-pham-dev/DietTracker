@@ -34,6 +34,8 @@ import StreakCalendar from "./StreakCalendar";
 import ProgressCharts from "./ProgressCharts";
 import { useUser } from "@/types/hook/useUserData1";
 import { useStreakCounter } from "@/types/hook/useStreakCounter";
+import ChatPanel from "./helper/chatAssistant/chatPanel";
+import PrivateAssistant from "./helper/chatAssistant/privateAssistant";
 const Dashboard= () => {
   const navigate = useNavigate();
   const {handleLogOut ,user, loading, profile, checkIns, submitTodayCheckIn, lastCheckIn, isSubmitting, motivationalMessage, existingMotivationalMessage, lastCheckInDate} = useUser(); 
@@ -57,6 +59,7 @@ const Dashboard= () => {
   
   return (
     <div className="min-h-screen bg-background">
+    <PrivateAssistant />
       {/* Header */}
       <header className="border-b bg-card">
         <div className="container flex h-16 items-center justify-between px-4">
@@ -104,7 +107,7 @@ const Dashboard= () => {
       </header>
 
       {/* Subscription Banner */}
-      {subscription.status === "free" && (
+      {/* {subscription.status === "free" && (
         <div className="bg-primary/10 py-2">
           <div className="container px-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -121,7 +124,7 @@ const Dashboard= () => {
             </Link>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Main Content */}
       <main className="container px-4 py-6">
