@@ -501,7 +501,7 @@ const LandingPage = () => {
           <Button 
                     size="lg" 
                     className="w-full bg-[#1877F2] hover:bg-[#145ec1] text-white transition-all"
-                    onClick={() => window.open('https://forms.gle/cQpkKaFxGgSgSroh6', '_blank')}
+                      onClick={() => window.open('https://forms.gle/cQpkKaFxGgSgSroh6', '_blank')}
                   >
                     <ArrowRightIcon className="mr-2 h-5 w-5" />
                     Share Your Feedback

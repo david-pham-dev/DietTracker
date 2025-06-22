@@ -11,6 +11,8 @@ import MyStoryPage from "./components/MyStory";
 import Dashboard from "./components/Dashboard";
 import ScrollToTop from "./types/ScrollToTop";
 import PrivacyPolicy from "./components/helper/privacyPolicy";
+import TestimonialsPage from "./components/Test";
+import Test from "./components/Test";
 function App() {
   return (
     <Suspense fallback={<p>Loading...</p>}>
@@ -25,6 +27,7 @@ function App() {
         {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
       </UserProvider>       
       <Routes>
+      <Route path="/test" element={ <Test />} />
       <Route path="/privacy" element={ <PrivacyPolicy />} />
         <Route path="/journey" element={<MyStoryPage />} />
          <Route path="/login" element={<LoginPage />} />
