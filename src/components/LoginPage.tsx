@@ -119,12 +119,6 @@ const LoginPage = () => {
             </Button> */}
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <div className="text-center text-sm">
-              Don't have an account?{" "}
-              <Link to="/register" className="text-primary hover:underline">
-                Register
-              </Link>
-            </div>
             <div className="text-center text-xs text-muted-foreground">
               By logging in, you agree to our{" "}
               <Link to="/terms" className="hover:underline">
