@@ -6,6 +6,7 @@ export default function MyStoryPage() {
   const beforeSidePhysique = getImageUrl('2023-side.jpg');
   const beforeFrontPhysique = getImageUrl('2023-front.jpg');
   const disgusting = getImageUrl('Disgusting.jpg')
+  const flexing = getImageUrl('flexing.jpg');
   const currentPhysique = getImageUrl('currentPhysique.jpg');
   const currentBackPhysique = getImageUrl('currentBackPhysique.jpg');
   const kg85 = getImageUrl('85kg.jpg');
@@ -262,7 +263,7 @@ return (
         </p>
         <div className="flex flex-col items-center pt-6 animate-fadeIn delay-200">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[beforeFrontPhysique, beforeSidePhysique, currentPhysique, currentBackPhysique].map((src, i) => (
+            {[beforeFrontPhysique, beforeSidePhysique, currentPhysique, currentBackPhysique, flexing].map((src, i) => (
               <div key={i} className="flex flex-col items-center">
                 <div
                   className={`w-40 h-56 overflow-hidden rounded-xl shadow-md ${i < 2 ? "filter grayscale" : ""} hover:scale-[1.02] transition-transform duration-300`}
@@ -272,8 +273,9 @@ return (
                 <p className="mt-1 text-xs text-muted-foreground">
                   {i === 0 && "Before (Front)"}
                   {i === 1 && "Before (Side)"}
-                  {i === 2 && "After (Front)"}
-                  {i === 3 && "After (Back)"}
+                  {i === 2 && "Now (Front)"}
+                  {i === 3 && "Now (Back)"}
+                  {i === 4 && "Now (Side)"}
                 </p>
               </div>
             ))}
