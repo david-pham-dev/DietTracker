@@ -123,7 +123,7 @@ const LandingPage = () => {
                 <CalendarIcon className="h-6 w-6 text-primary" />
                 <CardTitle>Progress Calendar</CardTitle>
                 <CardDescription>
-                  Visualize your journey with an easy-to-read calendar view
+                  Visualise your journey with an easy-to-read calendar view
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -344,93 +344,6 @@ const LandingPage = () => {
     </div>
   </section>
 
-
-      {/* Supporting Section */}
-
-   
-
-      {/* FAQ Section */}
-      {/* <section className="py-12 md:py-24 bg-muted/50">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <div className="space-y-2">
-              <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm">
-                FAQ
-              </div>
-              <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
-                Frequently Asked Questions
-              </h2>
-              <p className="max-w-[700px] text-muted-foreground md:text-xl">
-                Everything you need to know about our streak tracker
-              </p>
-            </div>
-          </div>
-          <div className="mx-auto max-w-3xl space-y-4 py-12">
-            <Card>
-              <CardHeader>
-                <CardTitle>What is OMAD?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>
-                  OMAD stands for "One Meal A Day" and is an intermittent
-                  fasting approach where you consume all your daily calories in
-                  just one meal and fast for the remaining hours of the day.
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>What is the Keto diet?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>
-                  The Ketogenic (Keto) diet is a low-carb, high-fat diet that
-                  helps your body enter a metabolic state called ketosis, where
-                  it burns fat for energy instead of carbohydrates.
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>How does the streak tracker work?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>
-                  Our streak tracker allows you to check in daily to record
-                  whether you've followed your OMAD and/or Keto diet. It tracks
-                  consecutive successful days, visualizes your progress, and
-                  provides motivational feedback to keep you going.
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>What happens if I miss a day?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>
-                  If you miss a day, your current streak will reset, but your
-                  longest streak will still be saved. We'll provide motivational
-                  messages to help you get back on track and start a new streak.
-                </p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Can I try before subscribing?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>
-                  Yes! We offer a 14-day free trial with full access to all
-                  features. This gives you enough time to build a habit and see
-                  if our tracker helps you stay consistent with your OMAD and
-                  Keto goals.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section> */}
       <section className="py-12 md:py-24 bg-background">
   <div className="container px-4 md:px-6">
     <div className="flex flex-col items-center justify-center space-y-4 text-center">
