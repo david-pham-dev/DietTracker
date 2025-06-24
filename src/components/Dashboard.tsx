@@ -59,7 +59,6 @@ const Dashboard= () => {
   
   return (
     <div className="min-h-screen bg-background">
-    <PrivateAssistant />
       {/* Header */}
       <header className="border-b bg-card">
         <div className="container flex h-16 items-center justify-between px-4">
